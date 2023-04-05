@@ -36,12 +36,12 @@ auth.set_access_token(access_token, access_token_secret)
 
 api = tweepy.API(auth)
 
-# Tweetin teksti
-tweet_text = "Yhden tähden jallua löytyy " + store_name + ": " + stock
+# Tweetin teksti esim. "Alko Varkaus ilmoittaa yhden tähden jallun saldoksi 16-20 pulloa."
+tweet_text = store_name + "ilmoittaa yhden tähden jallun saldoksi " + stock + " pulloa."
 
 # Satunnaisen viiveen lisääminen
-sleep_time = random.randint(30, 60) * 60 # Sekunneissa
-time.sleep(sleep_time)
+# sleep_time = random.randint(30, 60) * 60 # Sekunneissa
+# time.sleep(sleep_time)
 
 # Lähetetään tweetti
 api.update_status(tweet_text)
