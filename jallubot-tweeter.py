@@ -8,11 +8,13 @@ import time
 url = "https://www.alko.fi/INTERSHOP/web/WFS/Alko-OnlineShop-Site/fi_FI/-/EUR/ViewProduct-Include?SKU=000706"
 page = requests.get(url)
 
+
 # Parsitaan sivun HTML BeautifulSoup kirjaston avulla
 soup = BeautifulSoup(page.content, "html.parser")
 
 # Etsitään kaikki myymälät, jotka myyvät tuotetta ja niiden saatavuustiedot
 store_items = soup.find_all(class_="store-item")
+
 
 # Tallennetaan saatavuustiedot sanakirjaan
 stock_info = {}
