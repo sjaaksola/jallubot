@@ -1,44 +1,22 @@
 <?php
 require_once('vendor/autoload.php');
+require_once('jb-config.php');
 
 use Abraham\TwitterOAuth\TwitterOAuth;
 
-// Ladataan Alkon sivu tietylle tuotteelle
-$url = "https://www.alko.fi/INTERSHOP/web/WFS/Alko-OnlineShop-Site/fi_FI/-/EUR/ViewProduct-Include?SKU=000706";
-$page = file_get_contents($url);
+$json_data = file_get_contents('stock_info.json');
+$store_items = json_decode($json_data, true);
+// var_dump($store_items);
 
-// Parsitaan sivun HTML DOMDocument-luokan avulla
-$dom = new DOMDocument();
-@$dom->loadHTML($page);
-
-// Etsitään kaikki myymälät, jotka myyvät tuotetta ja niiden saatavuustiedot
-$store_items = $dom->getElementsByTagName('li');
-
-// Tallennetaan saatavuustiedot taulukkoon
-$stock_info = array();
-foreach ($store_items as $store) {
-    $store_name = $store->getElementsByTagName('span')->item(0);
-    $stock = $store->getElementsByTagName('span')->item(1);
-
-    // Tarkistetaan, että elementit ovat olemassa ennen niiden arvon hakemista
-    if ($store_name && $stock) {
-        $store_name_value = $store_name->nodeValue;
-        $stock_value = $stock->nodeValue;
-        $stock_info[$store_name_value] = $stock_value;
-    }
-}
 if (!empty($store_items)) {
     // Valitaan satunnainen myymälä ja saatavuustieto
-    $store_name = array_rand($stock_info);
-    $stock = $stock_info[$store_name];
+    
+    $store_name = array_rand($store_items);
+    // var_dump($store_name);
+    $stock = $store_items[$store_name];
 
     // Yhdistetään Twitter API:n käyttäjätunnukseen
-    $consumer_key = 'buvoCKcCQdnywmdLjqUNV68Mt';
-    $consumer_secret = 'VbESbbINeWc2hXmaJce36S7WP88tB4M6OwtTbKk2e0fmrMgxbe';
-    $bearer_token = 'AAAAAAAAAAAAAAAAAAAAAPQUmgEAAAAAZk7r2H%2F8848LxeWBGSbmW5Q%2FKsU%3D72OzlHuAUcKYZ4EyVzv4wlr2uxjvWny7OrLRS3LECGekO5Gy2Y';
-    $access_token = '1643559237828636672-rsEaINACdjNaPTpCmHSVzJlNCnli5j';
-    $access_token_secret = 'xf4KCUlUYHZ22qfhdOcBKXKSh7JukEi7aqhYr0pDW5D1a';
-    $connection = new TwitterOAuth($consumer_key, $consumer_secret, $access_token, $access_token_secret);
+    $connection = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET);
 
     // Make a request to the "account/verify_credentials" endpoint
     $user = $connection->get('account/verify_credentials');
@@ -56,7 +34,9 @@ if (!empty($store_items)) {
     // Lähetetään tweetti
     try {
         // Lähetetään tweetti
-        $connection->post('statuses/update', ['status' => $tweet_text]);
+        $message = $connection->post('tweets', ['text' => $tweet_text]);
+        echo json_encode($message);
+        echo "\n\r";
         echo 'Tweet lähetetty onnistuneesti! ("'.$tweet_text.'")'."\n\r";
     } catch (Exception $e) {
         echo 'Virhe tweetin lähettämisessä: ' . $e->getMessage();
